@@ -1,0 +1,16 @@
+# Local data, compiled output, and device-specific state
+**/bin/
+**/obj/
+**/Data/
+**/*.db
+**/*.db-shm
+**/*.db-wal
+DinnerTable.App/
+.vs/
+.vscode/
+*.user
+*.suo
+*.log
+*.pid
+.env
+.env.*
