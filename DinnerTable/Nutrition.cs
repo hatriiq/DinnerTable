@@ -4,6 +4,7 @@ namespace DinnerTable;
 // Reference: https://www.nal.usda.gov/sites/default/files/page-files/Protein.pdf
 public static class Nutrition {
  private static readonly Dictionary<string,decimal> ProteinPerUnit = new() {
+  ["garlic"]=.06m,["pepper"]=.01m,["broccoli"]=.03m,["cabbage"]=.01m,["greenbeans"]=.02m,["salsa"]=.01m,["bbq"]=0m,["mustard"]=.04m,["honey"]=0m,["yogurt"]=.10m,["milk"]=.033m,["butter"]=0m,["breadcrumb"]=.13m,["lemon"]=0m,
   ["chicken"]=.19m,["beef"]=.21m,["turkey"]=.19m,["pork"]=.21m,
   ["rice"]=.07m,["pasta"]=.13m,["tortilla"]=4m,["beans"]=.07m,
   ["tomato"]=.01m,["chickpea"]=.07m,["lentil"]=.24m,["egg"]=6m,

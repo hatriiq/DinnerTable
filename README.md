@@ -1,26 +1,43 @@
 # DinnerTable
 
-A local, free dinner planner built with C# / ASP.NET Core 10, SQLite, and plain HTML/CSS/JavaScript. No account, subscriptions, cloud database, remote fonts or hosted services. The packaged app requires the .NET 10 ASP.NET Core runtime. A fresh GitHub clone requires the .NET 10 SDK; the launcher builds the app on first use.
+A locally owned dinner planner built with C# / ASP.NET Core 10, SQLite and plain HTML/CSS/JavaScript. No paid application services, cloud database, or account needed for planning.
 
-## Open the app
-Double-click **Start-DinnerTable.cmd**, then use http://127.0.0.1:5188. The launcher starts the app quietly, or opens the existing instance. Keep the entire outputs folder together.
+## Start
+Double-click **Start-DinnerTable.cmd** on Windows, or run `dotnet run --project DinnerTable --no-launch-profile`, then open http://127.0.0.1:5188. A fresh clone requires the .NET 10 SDK; the Windows launcher publishes the app on first use. Published builds require the .NET 10 ASP.NET Core runtime.
 
-Enter people (1–20), nights (1–7), and budget ($1–$2,000). Build a plan, open meal titles for instructions, swap or remove meals, check shopping items, or export the list. Changing the people or budget immediately recalculates the existing plan. Changing nights sets the next generation target; choose Build to fill it. Recipes lets you favorite or exclude dinners. History preserves the last 20 generated-plan snapshots in the interface.
+## Plan by calendar week
+Choose a date or use Previous/Next week. Click a day to search the recipe collection, filter meat or meatless options, and assign dinner. Every week saves its own menu, serving count, budget and grocery checks. Adding or replacing a dinner immediately recalculates ingredients and cost. Open a dinner card for scaled ingredients and directions.
 
-## Estimates and planning
-Fourteen seeded recipes, including seven meat dinners. New plans require at least 80% meat dinners (rounded up) and at least 30 g estimated protein per serving. Swaps preserve these rules. These are initial product defaults, not personalized dietary recommendations. Protein estimates use rounded generic ingredient coefficients in Nutrition.cs and vary by product and preparation. Reference: https://www.nal.usda.gov/sites/default/files/page-files/Protein.pdf. All quantities scale from four servings using canonical ingredient IDs and units. The grocery list consolidates duplicates and rounds up to whole packages. Meal costs show only the quantities consumed; the basket includes leftover package contents. All staples are included; water is excluded. Canned bean package quantities are drained weights. Costs are illustrative USD estimates, not researched or live Walmart quotes; taxes and fees are excluded.
+Build my dinner plan generates the requested number of dinners. If the current menu already has that many dates assigned, those dates are preserved; otherwise the generated plan fills consecutive days from Monday. Manual calendar choices are honored, including meatless meals. Favorites/dislikes follow you across weeks. History contains generated-plan snapshots; the calendar stores subsequent edits to each week.
 
-A bounded beam search (180 candidates per depth) aims for inexpensive combined baskets with unique dinners when enough recipes are available. Favorites receive a small preference. This is a heuristic, not a proof of the cheapest possible basket. If no affordable plan is found, the amount over budget is shown; the app never promises a plan is affordable when its estimate exceeds the limit. With fewer eligible recipes or meat options than required, repeats are permitted. If every eligible meat recipe is disliked, generation reports a clear error rather than silently substituting vegetarian meals. Swaps choose a cheap alternative and can put a plan over budget, which remains visible.
+## Recipes and budget
+Exactly **50 recipes: 47 meat dinners and 3 meatless options**. The collection includes chicken, beef, turkey and pork. All seeded recipes have at least 30 g of estimated protein per serving. Automatic generation uses a 94% meat preference rounded up for short weeks, so a 1–7-night automatic plan is all meat; use the calendar for an occasional meatless choice.
 
-## Local ownership and backup
-Source: DinnerTable/. Published executable libraries: DinnerTable.App/. The launcher uses DinnerTable/ as its working directory, so **DinnerTable/Data/dinners.db** holds your recipes, ingredient catalog, preferences, current plan, grocery checks, and generated history. SQLite uses transactions and WAL. To back up, stop the app and copy the Data folder. The app listens only on the local loopback address. It does not start automatically with Windows.
+Protein estimates use rounded generic ingredient values in Nutrition.cs, not verified retail nutrition labels. Reference: [USDA protein table](https://www.nal.usda.gov/sites/default/files/page-files/Protein.pdf). Product brands and preparation can change these values.
 
-## Retailer boundary
-Models.cs defines IRetailerAdapter, ProductMatch, and CartPreparation. WalmartAdapter is an explicit unconnected stub; it supplies no invented product or price data. The meal engine depends on the local ingredient catalog, not Walmart. A future service can normalize retailer quotes into the catalog, track timestamps and product identifiers, then add browser/cart preparation separately. There is no assumed consumer Walmart cart API and no automatic checkout.
+The grocery engine scales quantities from four servings, consolidates ingredients and rounds up to whole packages. Meal costs count quantities consumed. The planning basket includes whole packages and leftovers. Oil and seasoning are included; water is not. Canned-bean quantities use estimated drained weights.
 
-## Development and verification
-Run `dotnet run --project DinnerTable --no-launch-profile` from this folder (stop the running app first). Build with `dotnet build DinnerTable`. Publish with `dotnet publish DinnerTable -c Release -o DinnerTable.App` while the app is stopped.
+Planning prices are illustrative USD estimates. The bounded search favors inexpensive combined baskets, with a small favorite preference; it is not guaranteed to find a global minimum. Over-budget results remain clearly labeled. Too few eligible recipes permit repeats. Dislikes are excluded. Estimated prices exclude taxes, fees and tips.
 
-Run the dependency-free integration harness with `dotnet run --project DinnerTable.Tests`. Nineteen checks cover meat/protein constraints, sparse collections, dinner count, variety, consolidation, affordability, serving scaling, package rounding, swaps, removal, dislikes, impossible budgets, persistence, history, and invalid inputs. Tests create an isolated temporary SQLite database. The live browser was also checked for generation, swaps, removal, recipe details, desktop layout, and narrow-screen layout.
+## Walmart
+The **Walmart** tab contains suggested product matches for every catalog ingredient, package quantities, editable store settings, product links and a price editor. Product IDs/package labels were checked against Walmart pages in September 2026. Suggestions are not live inventory guarantees. Review variable-weight meat and produce, and drained-weight assumptions, before adding to your cart.
 
-V1 does not include recipe editing/import, configurable nutritional targets, pantry deductions, live retail pricing, or ordering. The SQLite recipe catalog is persisted and can be extended through future editing features.
+After reviewing all products, **Add list to Walmart cart** opens Walmart's documented public [Add To Cart service](https://walmart.io/docs/atc/v1/add-to-cart), passing item IDs, calculated quantities and an optional store ID. It does not purchase anything. Walmart may require sign-in, report unavailable items, or ask you to confirm fulfillment. Reopening the link can add quantities again; use Open existing Walmart cart after the first handoff.
+
+This is a browser handoff, not an authenticated consumer ordering API. DinnerTable cannot automatically read your Walmart cart, guarantee stock, or retrieve live local prices. Save observed package prices in the app with their store/context; unknown prices are never treated as a complete quote. The Walmart subtotal is separate from the planner's illustrative estimate. Final price, inventory, substitutions, pickup/delivery, fees and checkout approval stay with Walmart.
+
+IRetailerAdapter separates retailer matching and cart construction from MealEngine. Future authenticated pricing/availability services can implement the interface without changing recipe calculations. No Walmart passwords, cookies or payment credentials are stored.
+
+## Data and backup
+DinnerTable/Data/dinners.db stores recipes, preferences, dated weekly plans, generated history, retailer settings and saved product matches/prices. The catalog migration preserves a copy of the previous catalog and retains existing menus. Stop the app and copy the Data folder to back it up. The application listens only on local loopback.
+
+Git ignores the database, compiled output, logs, process IDs and development artifacts. Source is in DinnerTable/; the Windows launcher runs DinnerTable.App/ with DinnerTable/ as its working directory. Updates require rebuilding the published app while it is stopped.
+
+## Development
+- Build: `dotnet build DinnerTable`
+- Run checks: `dotnet run --project DinnerTable.Tests`
+- Publish: `dotnet publish DinnerTable -c Release -o DinnerTable.App`
+
+The integration harness uses an isolated temporary SQLite database and checks recipe composition, ingredient integrity, protein rules, scaling, package rounding, swaps/removal, dislikes, invalid inputs, persistence, weekly isolation, calendar choices and Walmart handoff construction. Browser checks cover the calendar picker, week switching, mobile layout and Walmart review.
+
+Not included: pantry deductions, custom recipe editing/import, automatic local price refresh, automatic availability verification, or checkout automation.
